@@ -16,12 +16,18 @@ def run(*args):
 
 def cpu_option(command, old, new):
     help_text = subprocess.run(
-        ["colmap", command, "-h"], capture_output=True, text=True, check=True
+        ["colmap", command, "-h"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        check=True,
     ).stdout
     for option in (new, old):
         if option in help_text:
             return ["--" + option, "0"]
-    raise RuntimeError(f"Cannot find the CPU option for COLMAP {command}")
+    raise RuntimeError(
+        f"Cannot find --{new} or --{old} for COLMAP {command}.\n{help_text}"
+    )
 
 
 def extract_frames(video, output, count):

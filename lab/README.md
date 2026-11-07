@@ -1,5 +1,7 @@
 # Lab 3DGS trên Colab T4
 
+Luồng Splatfacto có [notebook và thiết kế riêng trong lab Nerfstudio](nerfstudio/README.md). Luồng đó dùng lại dữ liệu COLMAP đã lưu trên Drive.
+
 Notebook [3dgs_t4.ipynb](3dgs_t4.ipynb) chạy theo [pipeline đã thống nhất](../doc/ghi_nho_lab_3DGS.md). Nó dùng mã GraphDECO tại commit `54c035f7834b564019656c3e3fcc3646292f727d` và ghi kết quả vào Google Drive.
 
 ## Bắt đầu
@@ -17,7 +19,7 @@ Notebook [3dgs_t4.ipynb](3dgs_t4.ipynb) chạy theo [pipeline đã thống nhấ
 
 ## Xem tương tác sau khi train
 
-Chạy mục **Viewer tương tác sau khi train** trong notebook ngay khi có PLY baseline hoặc PLY vật thể. Chọn mô hình và vòng lặp, chỉnh góc ngang, góc cao hoặc zoom, rồi bấm **Render góc nhìn**. Colab render trên GPU và gửi ảnh về trình duyệt. Khi mở phiên mới, gắn Drive và cài môi trường trước khi mở viewer. Nếu đã tải `lab.zip` lên trước khi có viewer, tạo và tải lại ZIP chứa `viewer.py`, rồi giải nén lại trong một runtime mới.
+Chạy mục **Viewer tương tác sau khi train** khi có PLY từ lượt thử, baseline hoặc bản tách vật thể. Chọn mô hình, rồi kéo chuột trái trên ảnh để xoay camera, cuộn để zoom hoặc giữ Shift khi kéo để dịch khung nhìn. Dùng **Đặt lại góc nhìn** để quay về vị trí ban đầu. Bạn cũng có thể dùng thanh chỉnh góc và nút **Render góc nhìn**. Viewer cần GPU Colab đang hoạt động. Nếu `lab.zip` trên Drive chứa bản viewer cũ, tạo ZIP mới từ các script đã cập nhật.
 
 ## Kết quả trên Drive
 

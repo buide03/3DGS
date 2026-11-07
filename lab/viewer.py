@@ -16,6 +16,7 @@ from demo import camera, tensor, unit
 def show_viewer(upstream, model_dirs, sh_degree=3):
     import ipywidgets as widgets
     from IPython.display import display
+    from ipyevents import Event
 
     sys.path.insert(0, str(Path(upstream).resolve()))
     from gaussian_renderer import render
@@ -35,19 +36,33 @@ def show_viewer(upstream, model_dirs, sh_degree=3):
         options=[(f"{label} · vòng {iteration}", ply) for label, iteration, ply in choices],
         description="Mô hình",
     )
-    azimuth = widgets.IntSlider(description="Góc ngang", min=-180, max=180, step=5)
-    elevation = widgets.IntSlider(description="Góc cao", min=-75, max=75, value=15, step=5)
-    zoom = widgets.FloatSlider(description="Zoom", min=0.5, max=3, value=1, step=0.1)
+    azimuth = widgets.FloatSlider(description="Góc ngang", min=-180, max=180, step=1)
+    elevation = widgets.FloatSlider(description="Góc cao", min=-75, max=75, value=15, step=1)
+    zoom = widgets.FloatSlider(description="Zoom", min=0.5, max=3, value=1, step=0.05)
     button = widgets.Button(description="Render góc nhìn", button_style="primary")
-    preview = widgets.Image(format="png", width=640, height=480)
+    reset = widgets.Button(description="Đặt lại góc nhìn")
+    width, height = 640, 480
+    preview = widgets.Image(format="png", width=width, height=height)
+    instructions = widgets.HTML("Kéo chuột trái để xoay · Cuộn để zoom · Shift + kéo để dịch khung nhìn")
     status = widgets.Label()
     pipe = SimpleNamespace(debug=False, antialiasing=False, compute_cov3D_python=False,
                            convert_SHs_python=False)
     background = tensor([0.12, 0.15, 0.19])
     state = {}
 
+    drag = None
+
+    def camera_direction():
+        up, right = state["up"], state["right"]
+        yaw, pitch = np.deg2rad([azimuth.value, elevation.value])
+        horizontal = np.cos(yaw) * right + np.sin(yaw) * np.cross(up, right)
+        return np.cos(pitch) * horizontal + np.sin(pitch) * up
+
+    def camera_distance():
+        return 1.6 * state["radius"] / zoom.value
+
     @torch.no_grad()
-    def redraw(_):
+    def redraw(_=None):
         button.disabled = True
         status.value = "Đang render trên GPU Colab…"
         try:
@@ -75,15 +90,11 @@ def show_viewer(upstream, model_dirs, sh_degree=3):
                 if np.linalg.norm(right) < 1e-6:
                     right = np.cross(np.eye(3)[np.argmin(np.abs(up))], up)
                 state.update(ply=ply, model=model, center=center, radius=radius,
-                             up=up, right=unit(right))
+                             up=up, right=unit(right), pan=np.zeros(3))
 
-            up, right = state["up"], state["right"]
-            yaw, pitch = np.deg2rad([azimuth.value, elevation.value])
-            horizontal = np.cos(yaw) * right + np.sin(yaw) * np.cross(up, right)
-            direction = np.cos(pitch) * horizontal + np.sin(pitch) * up
-            center = state["center"]
-            eye = center + 1.6 * state["radius"] / zoom.value * direction
-            view = camera(eye, center, up, 640, 480)
+            center = state["center"] + state["pan"]
+            eye = center + camera_distance() * camera_direction()
+            view = camera(eye, center, state["up"], width, height)
             rgb = render(view, state["model"], pipe, background)["render"]
             image = Image.fromarray(rgb.permute(1, 2, 0).mul(255).byte().cpu().numpy())
             with BytesIO() as buffer:
@@ -96,6 +107,63 @@ def show_viewer(upstream, model_dirs, sh_degree=3):
         finally:
             button.disabled = False
 
+    def reset_view(_):
+        nonlocal drag
+        drag = None
+        if state:
+            state["pan"].fill(0)
+        azimuth.value, elevation.value, zoom.value = 0, 15, 1
+        redraw()
+
+    def drag_start_or_end(event):
+        nonlocal drag
+        if event["type"] == "mousedown" and event["button"] == 0:
+            drag = (event["clientX"], event["clientY"])
+        else:
+            drag = None
+
+    def move_or_zoom(event):
+        nonlocal drag
+        if not state or state.get("ply") != selected.value:
+            return
+        if event["type"] == "wheel":
+            delta = event["deltaY"]
+            if delta:
+                factor = 1.12 if delta < 0 else 1 / 1.12
+                zoom.value = float(np.clip(zoom.value * factor, zoom.min, zoom.max))
+                redraw()
+            return
+        if drag is None or not (event.get("buttons", 0) & 1):
+            return
+        x, y = event["clientX"], event["clientY"]
+        dx, dy = x - drag[0], y - drag[1]
+        drag = (x, y)
+        if not (dx or dy):
+            return
+        if event.get("shiftKey", False):
+            forward = -camera_direction()
+            right = unit(np.cross(forward, state["up"]))
+            down = np.cross(forward, right)
+            units_per_pixel = 2 * camera_distance() * np.tan(np.deg2rad(22.5)) / height
+            state["pan"] -= (dx * right + dy * down) * units_per_pixel
+        else:
+            azimuth.value = (azimuth.value - 0.4 * dx + 180) % 360 - 180
+            elevation.value = float(np.clip(
+                elevation.value + 0.4 * dy, elevation.min, elevation.max
+            ))
+        redraw()
+
+    drag_events = Event(source=preview, watched_events=["mousedown", "mouseup", "mouseleave", "dragstart"],
+                        prevent_default_action=True)
+    motion_events = Event(source=preview, watched_events=["mousemove", "wheel"],
+                          prevent_default_action=True, wait=150)
+    drag_events.on_dom_event(drag_start_or_end)
+    motion_events.on_dom_event(move_or_zoom)
+    selected.observe(reset_view, names="value")
+    reset.on_click(reset_view)
     button.on_click(redraw)
-    display(widgets.VBox([selected, azimuth, elevation, zoom, button, status, preview]))
-    redraw(None)
+    display(widgets.VBox([
+        selected, azimuth, elevation, zoom, widgets.HBox([button, reset]),
+        instructions, status, preview,
+    ]))
+    redraw()
