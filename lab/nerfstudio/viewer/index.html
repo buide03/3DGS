@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10161b">
+    <title>Gaussian Lab · Viewer</title>
+  </head>
+  <body>
+    <main class="workspace">
+      <header class="toolbar">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">◈</span> Gaussian Lab</div>
+        <div class="actions">
+          <button id="frame" type="button" disabled>Căn toàn cảnh</button>
+          <button id="open" type="button" class="primary">Mở file PLY</button>
+          <input id="file" type="file" accept=".ply" hidden>
+        </div>
+      </header>
+      <section class="stage" id="stage" aria-label="Khung xem mô hình 3D">
+        <div id="viewer"></div>
+        <div id="welcome" class="welcome">
+          <span class="welcome-mark" aria-hidden="true">◈</span>
+          <h1>Xem cảnh Gaussian 3D</h1>
+          <p>Kéo thả file <code>.ply</code> từ Nerfstudio vào đây hoặc chọn file trên máy.</p>
+          <button id="choose" type="button" class="primary">Chọn mô hình</button>
+        </div>
+      </section>
+      <footer class="footer">
+        <p id="status" role="status">Chưa mở mô hình</p>
+        <p class="controls">Kéo để xoay · Chuột phải để dịch · Cuộn để zoom</p>
+      </footer>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

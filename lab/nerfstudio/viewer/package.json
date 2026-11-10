@@ -1,0 +1,17 @@
+{
+  "name": "gaussian-capture-viewer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@playcanvas/supersplat-viewer": "1.42.1",
+    "playcanvas": "2.23.0"
+  },
+  "devDependencies": {
+    "vite": "8.3.7"
+  }
+}

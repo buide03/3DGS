@@ -1,13 +1,38 @@
 # Thiết kế lại lab 3DGS với Nerfstudio
 
+## Tái dựng cảnh tự quay
+
+1. Quay một cảnh tĩnh bằng một camera, giữ nguyên ống kính và mức zoom. Với vật thể, đi vòng quanh ở vài độ cao. Với căn phòng, đi qua các vị trí khác nhau để thấy cùng chi tiết từ nhiều góc. Xoay điện thoại tại một chỗ cung cấp ít thị sai để COLMAP dựng chiều sâu.
+2. Tạo thư mục `MyDrive/3dgs_captures/phong-01` và tải `capture.mp4` lên. Có thể dùng MOV hoặc ZIP chứa tối thiểu 16 ảnh JPG/PNG chụp bằng cùng camera, kích thước và hướng ảnh nhất quán.
+3. Mở [capture_nerfstudio.ipynb](capture_nerfstudio.ipynb) trong Colab, bật GPU T4 và chỉnh `CAPTURE_ID`, `SOURCE_NAME` ở ô đầu. Chạy lần lượt các ô. Video mặc định lấy khoảng 100 frame và ghép tuần tự. Bộ ảnh ghép mọi cặp. Nếu ghép tuần tự đăng ký được ít ảnh khi quay một vòng, đặt `MATCHING = "exhaustive"` và chạy lại phần chuẩn bị dữ liệu.
+4. Kiểm tra số ảnh COLMAP đăng ký. Có thể đặt `STEPS = 500` để chạy thử trước. Mặc định train 7.000 vòng. Ô cuối xuất `splat.ply` và `metrics.json` vào thư mục `runs` của cảnh trên Drive. Dataset COLMAP đã xử lý cũng được lưu riêng để chạy lại trên phiên Colab khác.
+
+Notebook xuất **toàn bộ cảnh đã học**, gồm vật thể và phần nền quan sát được. Viewer dùng Gaussian PLY để xem cảnh tĩnh từ các góc mới. Hình học từ video một camera có tỷ lệ tương đối. Để dùng theo mét trong mô phỏng, cần một phép hiệu chuẩn tỷ lệ riêng. [Hướng dẫn dữ liệu tự quay của Nerfstudio](https://docs.nerf.studio/quickstart/custom_dataset.html)
+
+## Gaussian Lab Viewer
+
+Chạy từ thư mục gốc repo trên máy có Node.js 22.12 trở lên:
+
+```powershell
+cd lab/nerfstudio/viewer
+npm.cmd ci
+npm.cmd run dev
+```
+
+Mở URL `Local` do Vite in ra. Chọn **Mở file PLY** hoặc kéo thả `splat.ply` đã tải về. Kéo chuột trái để xoay, kéo chuột phải để dịch và cuộn để zoom. **Căn toàn cảnh** đưa mô hình trở lại trong khung nhìn. Có thể mở file khác để thay cảnh hiện tại.
+
+Viewer render trong trình duyệt bằng WebGL và dùng file trên máy. Sau khi tải PLY, có thể đóng Colab. Viewer này tập trung vào xem và đổi mô hình. [SuperSplat Viewer của PlayCanvas](https://developer.playcanvas.com/user-manual/supersplat/viewer/embedding/)
+
+## Baseline video trụ chắn
+
 Mục tiêu là tái dựng một vật thể từ video, quan sát từ góc mới và đưa vật thể sang cảnh khác. Nerfstudio cung cấp vòng huấn luyện, rasterizer gsplat, Viewer, đánh giá và xuất PLY qua Splatfacto. Phần riêng của lab là tách Gaussian của vật thể và điều khiển pose của nó trong cảnh đích.
 
 ## Chạy baseline trên Colab
 
 1. Tải [notebook](3dgs_nerfstudio.ipynb) lên Colab và chọn T4. Notebook dùng `dataset.zip` và `split.json` đã có trong `MyDrive/3dgs_lab`. Đối với clip trụ chắn, đầu ra dự kiến của phần đọc dữ liệu là **78 train, 12 holdout**.
-2. Chạy tuần tự đến 500 vòng, đánh giá holdout và xuất PLY. Kết quả nằm dưới `MyDrive/3dgs_lab/nerfstudio`. Lần chạy đầu cần tạo môi trường riêng và biên dịch gsplat, vì vậy thời gian cài đặt tách khỏi thời gian train.
+2. Chạy tuần tự để train baseline 7.000 vòng, đánh giá holdout và xuất PLY. Kết quả nằm dưới `MyDrive/3dgs_lab/nerfstudio`. Lần chạy đầu cần tạo môi trường riêng và biên dịch gsplat, vì vậy thời gian cài đặt tách khỏi thời gian train.
 3. Mở PLY trong [SuperSplat](https://superspl.at/editor) để xoay và zoom bằng chuột. Nếu chạy trên máy chủ GPU có SSH, có thể dùng `ns-viewer` với cổng chuyển tiếp để mở Viewer gốc. [Tài liệu Viewer](https://docs.nerf.studio/quickstart/viewer_quickstart.html)
-4. Sau khi thấy mô hình, đổi `STEPS` thành `7000` và chạy lại phần train, đánh giá và xuất. Đây là lượt train mới. Giữ cùng tập holdout và ghi độ phân giải thực tế trước khi so sánh với GraphDECO.
+4. Nếu cần kiểm tra nhanh, đặt `STEPS = 500` trước khi chạy phần train. Mỗi lượt bắt đầu từ điểm thưa của COLMAP. Giữ cùng tập holdout và ghi độ phân giải thực tế trước khi so sánh với GraphDECO.
 
 ## Thay đổi kiến trúc
 
