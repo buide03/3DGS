@@ -11,24 +11,67 @@
       <header class="toolbar">
         <div class="brand"><span class="brand-mark" aria-hidden="true">◈</span> Gaussian Lab</div>
         <div class="actions">
-          <button id="frame" type="button" disabled>Căn toàn cảnh</button>
-          <button id="open" type="button" class="primary">Mở file PLY</button>
-          <input id="file" type="file" accept=".ply" hidden>
+          <div class="view-modes" role="group" aria-label="Chế độ xem">
+            <button id="render-mode" type="button" aria-pressed="true" disabled>Render 3D</button>
+            <button id="points-mode" class="icon-button" type="button" aria-pressed="false" title="Hiện tâm và elip Gaussian" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <ellipse cx="12" cy="12" rx="9" ry="5.5" transform="rotate(-32 12 12)"/>
+                <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+              </svg>
+              Gaussian
+            </button>
+          </div>
+          <button id="compare" type="button" aria-controls="video-panel" aria-pressed="false">So sánh video</button>
+          <button id="frame" class="icon-button" type="button" title="Căn toàn bộ mô hình vào khung nhìn" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 4H4v5m11-5h5v5m0 6v5h-5M4 15v5h5"/>
+              <rect x="9" y="9" width="6" height="6" rx="1"/>
+            </svg>
+            Căn khung
+          </button>
+          <details class="help">
+            <summary>Hướng dẫn</summary>
+            <dl>
+              <dt>Kéo chuột trái</dt><dd>Xoay 360°</dd>
+              <dt>Kéo chuột phải</dt><dd>Dịch khung nhìn</dd>
+              <dt>Cuộn chuột</dt><dd>Thu phóng</dd>
+              <dt>Nhấp đúp lên vật thể</dt><dd>Chọn tâm xoay</dd>
+            </dl>
+          </details>
         </div>
       </header>
-      <section class="stage" id="stage" aria-label="Khung xem mô hình 3D">
-        <div id="viewer"></div>
-        <div id="welcome" class="welcome">
-          <span class="welcome-mark" aria-hidden="true">◈</span>
-          <h1>Xem cảnh Gaussian 3D</h1>
-          <p>Kéo thả file <code>.ply</code> từ Nerfstudio vào đây hoặc chọn file trên máy.</p>
-          <button id="choose" type="button" class="primary">Chọn mô hình</button>
-        </div>
-      </section>
-      <footer class="footer">
-        <p id="status" role="status">Chưa mở mô hình</p>
-        <p class="controls">Kéo để xoay · Chuột phải để dịch · Cuộn để zoom</p>
-      </footer>
+      <div class="scene-layout">
+        <section class="scene-panel" aria-label="Mô hình 3D">
+          <header class="panel-toolbar">
+            <div class="file-details">
+              <strong id="status" class="file-name" role="status">3D</strong>
+              <span id="model-info" class="file-info"></span>
+            </div>
+            <button id="open" type="button">Mở PLY</button>
+            <input id="file" type="file" accept=".ply" hidden>
+          </header>
+          <div class="stage" id="stage">
+            <div id="viewer"></div>
+            <div id="welcome" class="welcome">
+              <span class="welcome-mark" aria-hidden="true">◈</span>
+              <h1>Xem cảnh Gaussian 3D</h1>
+              <p>Kéo thả file <code>.ply</code> từ Nerfstudio vào đây hoặc chọn file trên máy.</p>
+              <button id="choose" type="button" class="primary">Chọn mô hình</button>
+            </div>
+          </div>
+        </section>
+        <section id="video-panel" class="scene-panel video-panel" aria-label="Video gốc" hidden>
+          <header class="panel-toolbar">
+            <div class="file-details">
+              <strong id="video-status" class="file-name" role="status">Video gốc</strong>
+              <span id="video-info" class="file-info"></span>
+            </div>
+            <button id="open-video" type="button">Mở video</button>
+            <input id="video-file" type="file" accept="video/*,.mp4,.mov,.webm" hidden>
+          </header>
+          <video id="source-video" aria-label="Video gốc của cảnh" controls playsinline preload="metadata" hidden></video>
+        </section>
+      </div>
     </main>
     <script type="module" src="./src/main.js"></script>
   </body>

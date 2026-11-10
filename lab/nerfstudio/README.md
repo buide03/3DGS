@@ -19,7 +19,9 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Mở URL `Local` do Vite in ra. Chọn **Mở file PLY** hoặc kéo thả `splat.ply` đã tải về. Kéo chuột trái để xoay, kéo chuột phải để dịch và cuộn để zoom. **Căn toàn cảnh** đưa mô hình trở lại trong khung nhìn. Có thể mở file khác để thay cảnh hiện tại.
+Mở URL `Local` do Vite in ra. Chọn **Mở file PLY** hoặc kéo thả `splat.ply` đã tải về. Chế độ **Gaussian** chiếu tâm và đường viền 2σ của toàn bộ Gaussian trong PLY lên ảnh render. Tâm lấy từ tọa độ 3D, elip lấy từ scale và quaternion, còn màu cơ sở lấy từ hệ số SH bậc 0. Lớp kiểm tra dùng độ đục riêng để thấy cả Gaussian có opacity thấp. Kéo chuột trái để xoay 360°, kéo chuột phải để dịch, cuộn để zoom và nhấp đúp lên vật thể để chọn tâm xoay. **Căn khung** đưa mô hình trở lại trong khung nhìn. Viewer dùng trục Y hướng lên và đọc hướng trục từ PLY, mặc định là Z cho file Nerfstudio thiếu thông tin này.
+
+Bấm **So sánh video** rồi **Mở video** để đặt video gốc cạnh khung 3D. Video có nút phát, tạm dừng và tua riêng, còn khung 3D vẫn dùng chuột để đổi góc nhìn.
 
 Viewer render trong trình duyệt bằng WebGL và dùng file trên máy. Sau khi tải PLY, có thể đóng Colab. Viewer này tập trung vào xem và đổi mô hình. [SuperSplat Viewer của PlayCanvas](https://developer.playcanvas.com/user-manual/supersplat/viewer/embedding/)
 
